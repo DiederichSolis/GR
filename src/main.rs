@@ -101,6 +101,36 @@ impl Moon {
         }
     }
 
+    #[derive(Clone, Copy)]
+pub struct GasPlanet {
+    position: Vec3,
+    scale: f32,
+    rotation: Vec3,
+    orbit_angle: f32,
+    orbit_radius: f32,
+    orbit_speed: f32,
+}
+
+impl GasPlanet {
+    fn new() -> Self {
+        GasPlanet {
+            position: Vec3::new(0.0, 0.0, 0.0),
+            scale: 0.6, // Tamaño del planeta de gas
+            rotation: Vec3::new(0.0, 0.0, 0.0),
+            orbit_angle: 0.0,
+            orbit_radius: 4.0, // Radio de la órbita
+            orbit_speed: 0.005, // Velocidad de la órbita
+        }
+    }
+
+    fn update(&mut self) {
+        self.orbit_angle += self.orbit_speed;
+        self.position.x = self.orbit_angle.cos() * self.orbit_radius;
+        self.position.z = self.orbit_angle.sin() * self.orbit_radius;
+        self.rotation.y += 0.005; // Rotación ajustable
+    }
+}
+
 
 fn create_noise() -> FastNoiseLite {
     let mut noise = FastNoiseLite::with_seed(1337);

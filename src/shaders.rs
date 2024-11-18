@@ -56,6 +56,7 @@ pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
        CelestialBody::Moon => moon_color(fragment, uniforms),
        CelestialBody::sun => sun_gradient(fragment, uniforms),
        CelestialBody::gas => gas_planet_color(fragment, uniforms),
+       CelestialBody::rocky => rocky_planet_color(fragment, uniforms),
      
 
     }
@@ -194,3 +195,38 @@ fn gas_planet_color(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     final_color + final_glow
 }
 
+
+fn rocky_planet_color(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+    // Utiliza la posición del fragmento y el tiempo para generar un "seed" para el ruido.
+    let seed = uniforms.time as f32 * fragment.vertex_position.y * fragment.vertex_position.x;
+
+    // Crea un generador de números aleatorios basado en el seed.
+    let mut rng = StdRng::seed_from_u64(seed.abs() as u64);
+    
+    // Define colores base para el planeta rocoso.
+    let base_color = Color::new(139, 69, 19); // Marrón (color de tierra)
+    let highlight_color = Color::new(255, 255, 255); // Blanco para resaltar
+    let shadow_color = Color::new(80, 50, 0); // Sombra más oscura
+
+    // Calcular el factor de ruido para la textura del planeta
+    let noise_value = uniforms.noise.get_noise_2d(fragment.vertex_position.x * 3.0, fragment.vertex_position.z * 3.0);
+    let texture_factor = (noise_value * 0.5 + 0.5).powi(2); // Escala el ruido entre 0 y 1.
+
+    // Crear líneas utilizando el ruido en la textura
+    let line_factor = ((fragment.vertex_position.x + fragment.vertex_position.z) * 10.0).sin();
+    let line_color = if line_factor > 0.0 {
+        highlight_color
+    } else {
+        shadow_color
+    };
+
+    // Combina el color base con las líneas
+    let planet_color = base_color * (1.0 - texture_factor) + line_color * texture_factor;
+
+    // Añadir sombras sutiles
+    let shadow_factor = (1.0 - noise_value).max(0.0);
+    let shadow_effect = shadow_color * shadow_factor * 0.3; // Sombra suave
+
+    // Devuelve el color final combinado
+    planet_color + shadow_effect
+}

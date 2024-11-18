@@ -26,6 +26,7 @@ pub enum CelestialBody {
     Moon,
     sun,
     gas,
+    rocky
    
 }
 
@@ -316,6 +317,7 @@ fn main() {
     let mut current_body = CelestialBody::earth;
     let mut moon = Moon::new();
     let mut sun = Sun::new();
+    let mut gas_planet = GasPlanet::new();
 
 
 
@@ -389,6 +391,28 @@ fn main() {
             };
         
             render(&mut framebuffer, &sun_uniforms, &vertex_arrays);
+
+                        // En el loop principal
+            gas_planet.update();
+
+            let gas_planet_model_matrix = create_model_matrix(
+                gas_planet.position,
+                gas_planet.scale,
+                gas_planet.rotation
+            );
+
+            let gas_planet_uniforms = Uniforms {
+                model_matrix: gas_planet_model_matrix,
+                view_matrix,
+                projection_matrix,
+                viewport_matrix,
+                time,
+                noise: create_noise(),
+                current_body: CelestialBody::gas, // Tipo de cuerpo para el planeta de gas
+            };
+
+            // Renderizar el planeta de gas
+            render(&mut framebuffer, &gas_planet_uniforms, &vertex_arrays);
 
                     }
 

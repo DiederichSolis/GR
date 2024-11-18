@@ -25,7 +25,8 @@ pub enum CelestialBody {
     earth,
     Moon,
     sun,
-  
+    gas,
+   
 }
 
 pub struct Uniforms {

@@ -102,35 +102,6 @@ impl Moon {
         }
     }
 
-    #[derive(Clone, Copy)]
-    pub struct Star {
-        position: Vec3,
-        scale: f32,
-        rotation: Vec3,
-        orbit_angle: f32,
-        orbit_radius: f32,
-        orbit_speed: f32,
-    }
-
-    impl Star {
-        fn new() -> Self {
-            Star {
-                position: Vec3::new(0.0, 0.0, 0.0),
-                scale: 0.4, // Tamaño de Star
-                rotation: Vec3::new(0.0, 0.0, 0.0),
-                orbit_angle: 0.0,
-                orbit_radius: 5.0, // Radio de la órbita de Star
-                orbit_speed: 0.015, // Velocidad de la órbita de Star
-            }
-        }
-
-        fn update(&mut self) {
-            self.orbit_angle += self.orbit_speed;
-            self.position.x = self.orbit_angle.cos() * self.orbit_radius;
-            self.position.z = self.orbit_angle.sin() * self.orbit_radius;
-            self.rotation.y += 0.01; // Rotación ajustable
-        }
-    }
 
     #[derive(Clone, Copy)]
 pub struct GasPlanet {
@@ -160,6 +131,38 @@ impl GasPlanet {
         self.position.z = self.orbit_angle.sin() * self.orbit_radius;
         self.rotation.y += 0.005; // Rotación ajustable
     }
+
+    
+}
+
+    #[derive(Clone, Copy)]
+    pub struct Star {
+        position: Vec3,
+        scale: f32,
+        rotation: Vec3,
+        orbit_angle: f32,
+        orbit_radius: f32,
+        orbit_speed: f32,
+    }
+
+    impl Star {
+        fn new() -> Self {
+            Star {
+                position: Vec3::new(0.0, 0.0, 0.0),
+                scale: 0.4, // Tamaño de Star
+                rotation: Vec3::new(0.0, 0.0, 0.0),
+                orbit_angle: 0.0,
+                orbit_radius: 5.0, // Radio de la órbita de Star
+                orbit_speed: 0.05, // Velocidad de la órbita de Star
+            }
+        }
+
+        fn update(&mut self) {
+            self.orbit_angle += self.orbit_speed;
+            self.position.x = self.orbit_angle.cos() * self.orbit_radius;
+            self.position.z = self.orbit_angle.sin() * self.orbit_radius;
+            self.rotation.y += 0.01; // Rotación ajustable
+        }
 }
 
 
@@ -348,6 +351,8 @@ fn main() {
     let mut moon = Moon::new();
     let mut sun = Sun::new();
     let mut gas_planet = GasPlanet::new();
+    let mut star = Star::new();
+
 
 
 
@@ -443,6 +448,28 @@ fn main() {
 
             // Renderizar el planeta de gas
             render(&mut framebuffer, &gas_planet_uniforms, &vertex_arrays);
+
+            // Actualizar Star
+            star.update();
+
+            let star_model_matrix = create_model_matrix(
+                star.position,
+                star.scale,
+                star.rotation
+            );
+
+            let star_uniforms = Uniforms {
+                model_matrix: star_model_matrix,
+                view_matrix,
+                projection_matrix,
+                viewport_matrix,
+                time,
+                noise: create_noise(),
+                current_body: CelestialBody::rocky, // Enum puede cambiarse a algo representativo de Star
+            };
+
+            render(&mut framebuffer, &star_uniforms, &vertex_arrays);
+
 
                     }
 

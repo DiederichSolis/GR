@@ -153,7 +153,7 @@ impl GasPlanet {
                 rotation: Vec3::new(0.0, 0.0, 0.0),
                 orbit_angle: 0.0,
                 orbit_radius: 5.0, // Radio de la órbita de Star
-                orbit_speed: 0.05, // Velocidad de la órbita de Star
+                orbit_speed: 0.005, // Velocidad de la órbita de Star
             }
         }
 
@@ -269,7 +269,7 @@ fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Ve
 }
 
 fn handle_input(window: &Window, camera: &mut Camera) {
-    let movement_speed = 1.0;
+    let movement_speed = 3.0;
     let rotation_speed = PI/50.0;
     let zoom_speed = 0.1;
    

@@ -90,7 +90,7 @@ impl Moon {
                 rotation: Vec3::new(0.0, 0.0, 0.0),
                 orbit_angle: 0.0,
                 orbit_radius: 3.0, // Ajusta el radio de la órbita
-                orbit_speed: 0.01, // Ajusta la velocidad de la órbita
+                orbit_speed: 0.015, // Ajusta la velocidad de la órbita
             }
         }
 
@@ -121,7 +121,7 @@ impl GasPlanet {
             rotation: Vec3::new(0.0, 0.0, 0.0),
             orbit_angle: 0.0,
             orbit_radius: 4.0, // Radio de la órbita
-            orbit_speed: 0.005, // Velocidad de la órbita
+            orbit_speed: 0.008, // Velocidad de la órbita
         }
     }
 
@@ -129,7 +129,7 @@ impl GasPlanet {
         self.orbit_angle += self.orbit_speed;
         self.position.x = self.orbit_angle.cos() * self.orbit_radius;
         self.position.z = self.orbit_angle.sin() * self.orbit_radius;
-        self.rotation.y += 0.005; // Rotación ajustable
+        self.rotation.y += 0.01; // Rotación ajustable
     }
 
     
@@ -149,11 +149,11 @@ impl GasPlanet {
         fn new() -> Self {
             Star {
                 position: Vec3::new(0.0, 0.0, 0.0),
-                scale: 0.4, // Tamaño de Star
+                scale: 0.7, // Tamaño de Star
                 rotation: Vec3::new(0.0, 0.0, 0.0),
                 orbit_angle: 0.0,
                 orbit_radius: 5.0, // Radio de la órbita de Star
-                orbit_speed: 0.005, // Velocidad de la órbita de Star
+                orbit_speed: 0.006, // Velocidad de la órbita de Star
             }
         }
 
@@ -164,6 +164,37 @@ impl GasPlanet {
             self.rotation.y += 0.01; // Rotación ajustable
         }
 }
+
+    #[derive(Clone, Copy)]
+    pub struct RockyPlanet {
+        position: Vec3,
+        scale: f32,
+        rotation: Vec3,
+        orbit_angle: f32,
+        orbit_radius: f32,
+        orbit_speed: f32,
+    }
+
+    impl RockyPlanet {
+        fn new() -> Self {
+            RockyPlanet {
+                position: Vec3::new(0.0, 0.0, 0.0),
+                scale: 0.85, 
+                rotation: Vec3::new(0.0, 0.0, 0.0),
+                orbit_angle: 0.0,
+                orbit_radius: 6.0, // Radio de la órbita
+                orbit_speed: 0.004, // Velocidad de la órbita
+            }
+        }
+
+        fn update(&mut self) {
+            self.orbit_angle += self.orbit_speed;
+            self.position.x = self.orbit_angle.cos() * self.orbit_radius;
+            self.position.z = self.orbit_angle.sin() * self.orbit_radius;
+            self.rotation.y += 0.01; 
+        }
+    }
+
 
 
 fn create_noise() -> FastNoiseLite {
@@ -352,6 +383,8 @@ fn main() {
     let mut sun = Sun::new();
     let mut gas_planet = GasPlanet::new();
     let mut star = Star::new();
+    let mut rocky_planet = RockyPlanet::new();
+
 
 
 
@@ -469,6 +502,22 @@ fn main() {
             };
 
             render(&mut framebuffer, &star_uniforms, &vertex_arrays);
+
+                rocky_planet.update(); // Actualizar el planeta rocoso
+
+        // Crear matriz de modelo para cada cuerpo celeste y renderizar
+        let rocky_model_matrix = create_model_matrix(rocky_planet.position, rocky_planet.scale, rocky_planet.rotation);
+        let rocky_uniforms = Uniforms {
+            model_matrix: rocky_model_matrix,
+                view_matrix,
+                projection_matrix,
+                viewport_matrix,
+                time,
+                noise: create_noise(),
+            current_body: CelestialBody::rocky, // Marcar como el planeta actual
+        };
+
+        render(&mut framebuffer, &rocky_uniforms, &vertex_arrays);
 
 
                     }

@@ -22,10 +22,10 @@ use fastnoise_lite::{FastNoiseLite, NoiseType};
 
 #[derive(Clone, Copy)]
 pub enum CelestialBody {
-   
-   
     earth,
     Moon,
+    sun,
+  
 }
 
 pub struct Uniforms {
@@ -48,6 +48,7 @@ pub struct Moon {
     orbit_speed: f32,
 }
 
+
 impl Moon {
     fn new() -> Self {
         Moon {
@@ -58,6 +59,7 @@ impl Moon {
             orbit_radius: 2.0,
             orbit_speed: 0.02,
         }
+      
     }
 
     fn update(&mut self) {
@@ -67,6 +69,37 @@ impl Moon {
         self.rotation.y += 0.01;
     }
 }
+
+    #[derive(Clone, Copy)]
+    pub struct Sun {
+        position: Vec3,
+        scale: f32,
+        rotation: Vec3,
+        orbit_angle: f32,
+        orbit_radius: f32,
+        orbit_speed: f32,
+    }
+
+    impl Sun {
+        fn new() -> Self {
+            Sun {
+                position: Vec3::new(0.0, 0.0, 0.0),
+                scale: 0.5, // Puedes ajustar el tamaño según prefieras
+                rotation: Vec3::new(0.0, 0.0, 0.0),
+                orbit_angle: 0.0,
+                orbit_radius: 3.0, // Ajusta el radio de la órbita
+                orbit_speed: 0.01, // Ajusta la velocidad de la órbita
+            }
+        }
+
+        fn update(&mut self) {
+            self.orbit_angle += self.orbit_speed;
+            self.position.x = self.orbit_angle.cos() * self.orbit_radius;
+            self.position.z = self.orbit_angle.sin() * self.orbit_radius;
+            self.rotation.y += 0.01; // Ajusta la rotación si lo deseas
+        }
+    }
+
 
 fn create_noise() -> FastNoiseLite {
     let mut noise = FastNoiseLite::with_seed(1337);
@@ -251,6 +284,8 @@ fn main() {
     let mut time = 0;
     let mut current_body = CelestialBody::earth;
     let mut moon = Moon::new();
+    let mut sun = Sun::new();
+
 
 
     while window.is_open() {
@@ -304,7 +339,27 @@ fn main() {
             };
 
             render(&mut framebuffer, &moon_uniforms, &vertex_arrays);
-        }
+            sun.update();
+    
+            let sun_model_matrix = create_model_matrix(
+                sun.position,
+                sun.scale,
+                sun.rotation
+            );
+        
+            let sun_uniforms = Uniforms {
+                model_matrix: sun_model_matrix,
+                view_matrix,
+                projection_matrix,
+                viewport_matrix,
+                time,
+                noise: create_noise(),
+                current_body: CelestialBody::sun, // Asegúrate de que el sol tenga su propio tipo
+            };
+        
+            render(&mut framebuffer, &sun_uniforms, &vertex_arrays);
+
+                    }
 
         window
             .update_with_buffer(&framebuffer.buffer, framebuffer_width, framebuffer_height)

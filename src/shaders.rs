@@ -54,87 +54,99 @@ pub fn fragment_shader(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     match uniforms.current_body {
        CelestialBody::earth => earth(fragment, uniforms),
        CelestialBody::Moon => moon_color(fragment, uniforms),
-        
+       CelestialBody::sun => sun_gradient(fragment, uniforms),
+      
+
     }
   }
 
   fn earth(fragment: &Fragment, uniforms: &Uniforms) -> Color {
     let position = fragment.vertex_position;
     let time = uniforms.time as f32 * 0.01;
-  
-    // Colores modificados a tonos naranjas
-    let surface_color = Color::new(255, 150, 50);  // Naranja para los océanos
-    let land_color = Color::new(255, 100, 0);      // Naranja oscuro para la tierra
-    let cloud_color = Color::new(255, 255, 255);   // Blanco para las nubes
-    
-    // Cálculos de ruido para la superficie
-    let surface = uniforms.noise.get_noise_2d(
-        position.x * 50.0,  // Reducir la escala del ruido para ampliar el océano
-        position.y * 50.0   // Reducir la escala del ruido para ampliar el océano
-    );
-    
-    // Ruido para las nubes, con más capas de movimiento
-    let clouds_1 = uniforms.noise.get_noise_3d(
-        position.x * 50.0 + time,
-        position.y * 50.0 + time * 0.5,
-        time
-    );
-    
-    let clouds_2 = uniforms.noise.get_noise_3d(
-        position.x * 60.0 + time * 1.5,
-        position.y * 60.0 + time * 0.8,
-        time * 0.5
-    );
-    
-    // Mezcla de las dos capas de nubes para dar más variabilidad
-    let clouds = (clouds_1 + clouds_2) * 0.5;  // Promedio de las dos capas para más nubes
 
-    // Determinar el color base: ahora el umbral para océano es más bajo, más superficie es océano
-    let base_color = if surface > 0.1 {  // Reducir el umbral para que más área sea tierra
-        land_color  // Si es tierra, usar color naranja oscuro
+    let surface_color = Color::new(255, 150, 50);
+    let land_color = Color::new(255, 100, 0);
+    let cloud_color = Color::new(255, 255, 255);
+
+    let surface = uniforms.noise.get_noise_2d(position.x * 50.0, position.y * 50.0);
+    let clouds = uniforms.noise.get_noise_3d(position.x * 50.0 + time, position.y * 50.0 + time * 0.5, time);
+
+    let base_color = if surface > 0.1 {
+        land_color
     } else {
-        surface_color  // Si es agua, usar color naranja claro
+        surface_color
     };
-    
-    // Mezcla con las nubes
-    let final_color = if clouds > 0.4 {  // Ajusta este valor para mayor o menor densidad de nubes
+
+    let final_color = if clouds > 0.4 {
         base_color.lerp(&cloud_color, (clouds - 0.4) * 2.0)
     } else {
         base_color
     };
-    
-    final_color * fragment.intensity  // Ajustar el color según la intensidad de luz
+
+    final_color // Eliminado ajuste por intensidad de luz
 }
-
-
-
 
 fn moon_color(fragment: &Fragment, uniforms: &Uniforms) -> Color {
-  // Aumentar la escala del ruido para más detalles
-  let noise_value = uniforms.noise.get_noise_2d(fragment.vertex_position.x * 20.0, fragment.vertex_position.z * 20.0);
-  
-  let elevation = noise_value; // Puedes combinar varios niveles de ruido si lo deseas
+    let noise_value = uniforms.noise.get_noise_2d(fragment.vertex_position.x * 20.0, fragment.vertex_position.z * 20.0);
+    let elevation = noise_value;
 
-  // Umbrales
-  let low_threshold = -0.1; 
-  let medium_threshold = 0.1;
-  let high_threshold = 0.3; // Agregar un nuevo umbral para cráteres
+    let low_threshold = -0.1;
+    let medium_threshold = 0.1;
+    let high_threshold = 0.3;
 
-  // Colores representativos
-  let dark_surface_color = Color::new(169, 169, 169); // Gris oscuro
-  let light_surface_color = Color::new(211, 211, 211); // Gris claro
-  let crater_color = Color::new(255, 255, 255);       // Blanco para los cráteres
+    let dark_surface_color = Color::new(169, 169, 169);
+    let light_surface_color = Color::new(211, 211, 211);
+    let crater_color = Color::new(255, 255, 255);
 
-  // Determinamos el color
-  let color = if elevation < low_threshold {
-      dark_surface_color
-  } else if elevation < medium_threshold {
-      light_surface_color
-  } else if elevation < high_threshold {
-      crater_color // Área de cráteres
-  } else {
-      Color::new(240, 240, 240) // Color para áreas muy altas
-  };
+    let color = if elevation < low_threshold {
+        dark_surface_color
+    } else if elevation < medium_threshold {
+        light_surface_color
+    } else if elevation < high_threshold {
+        crater_color
+    } else {
+        Color::new(240, 240, 240)
+    };
 
-  color * fragment.intensity
+    color // Eliminado ajuste por intensidad de luz
 }
+
+
+fn sun_gradient(fragment: &Fragment, uniforms: &Uniforms) -> Color {
+    // Obtiene un valor de ruido para efectos adicionales (opcional).
+    let noise_value = uniforms.noise.get_noise_2d(fragment.vertex_position.x * 10.0, fragment.vertex_position.z * 10.0);
+    
+    // Define colores representativos para el sol en tonos naranjas.
+    let deep_orange_color = Color::new(255, 140, 0); // Naranja profundo.
+    let light_orange_color = Color::new(255, 165, 80); // Naranja claro.
+    let white_color = Color::new(255, 255, 255); // Blanco para el brillo.
+    let warm_orange_color = Color::new(255, 200, 100); // Naranja cálido para el resplandor.
+
+    // Determina la posición relativa del fragmento para el difuminado.
+    let distance_to_sun = (fragment.vertex_position.y - 5.0).abs(); // Ajusta la altura según necesites.
+    
+    // Calcula un factor de difuminado basado en la distancia.
+    let gradient_factor = (1.0 - distance_to_sun / 10.0).max(0.0).min(1.0);
+    
+    // Calcula el color difuminado combinando los colores.
+    let sun_color = 
+        deep_orange_color * gradient_factor * 0.5 + 
+        light_orange_color * (1.0 - gradient_factor) * 0.5 + 
+        warm_orange_color * gradient_factor * 0.3; // Añadiendo naranja cálido para mayor luminosidad.
+
+    // Agrega un brillo adicional alrededor del sol.
+    let glow_color = white_color * 0.3 * gradient_factor; // Brillo suave alrededor del sol.
+    
+    // Combina el color del sol y el brillo.
+    let final_color = sun_color + glow_color;
+
+    // Crea variaciones adicionales para simular partes del sol y su halo.
+    if noise_value > 0.2 {
+        let halo_color = Color::new(255, 160, 50); // Color del halo en un tono naranja más suave.
+        let halo_factor = (noise_value - 0.2).min(0.5); // Intensifica el halo basado en el ruido.
+        return final_color + halo_color * halo_factor; // Combina el color del halo.
+    }
+
+    final_color
+}
+

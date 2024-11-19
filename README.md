@@ -80,7 +80,13 @@ cargo run
 
 
 VIEW
+link del video: 
+```
+https://youtu.be/__KN2pkEsnc
+```
 
 ![video1848392472](https://github.com/user-attachments/assets/a2f8f96b-f261-44d2-8d87-0483e3a77bf7)
+
+
 
 

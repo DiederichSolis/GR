@@ -1,6 +1,5 @@
 use rand::Rng;
 
-
 pub struct Framebuffer {
     pub width: usize,
     pub height: usize,
@@ -8,6 +7,7 @@ pub struct Framebuffer {
     pub zbuffer: Vec<f32>,
     background_color: u32,
     current_color: u32,
+    star_positions: Vec<(usize, usize)>, // Para mantener las posiciones de las estrellas
 }
 
 impl Framebuffer {
@@ -18,38 +18,43 @@ impl Framebuffer {
             buffer: vec![0; width * height],
             zbuffer: vec![f32::INFINITY; width * height],
             background_color: 0x000000,
-            current_color: 0xFFFFFF
+            current_color: 0xFFFFFF,
+            star_positions: Vec::new(), // Inicializa el vector vacío
         }
     }
 
     pub fn add_stars(&mut self, star_count: usize) {
         let mut rng = rand::thread_rng();
-    
-        // Color para las estrellas
-        let star_color = 0xFFFFFF; // Blanco
-    
+        let star_color = 0xFFFFFF; // Color blanco para las estrellas
+
         for _ in 0..star_count {
             let x = rng.gen_range(0..self.width);
             let y = rng.gen_range(0..self.height);
-            
-            // Establecer el color actual para las estrellas
-            self.set_current_color(star_color);
-            
-            // Profundidad baja para asegurarte que las estrellas estén al fondo
-            let depth = f32::INFINITY;
-    
-            // Dibuja el punto
-            self.point(x, y, depth);
+
+            self.star_positions.push((x, y)); // Guarda la posición de la estrella
+        }
+
+        // Dibuja las estrellas en el búfer
+        for &(x, y) in &self.star_positions {
+            let index = y * self.width + x;
+            self.buffer[index] = star_color; // Coloca las estrellas directamente en el búfer
         }
     }
 
-
     pub fn clear(&mut self) {
+        // Limpia el búfer con el color de fondo
         for pixel in self.buffer.iter_mut() {
             *pixel = self.background_color;
         }
         for depth in self.zbuffer.iter_mut() {
             *depth = f32::INFINITY;
+        }
+
+        // Redibuja las estrellas después de limpiar el fondo
+        let star_color = 0xFFFFFF; // Color blanco para las estrellas
+        for &(x, y) in &self.star_positions {
+            let index = y * self.width + x;
+            self.buffer[index] = star_color; // Coloca las estrellas nuevamente
         }
     }
 

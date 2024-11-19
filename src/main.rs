@@ -427,7 +427,7 @@ fn main() {
     window.update();
 
     framebuffer.set_background_color(0x000000);
-    framebuffer.add_stars(10000);  // Agregar 100 estrellas al espacio
+    framebuffer.add_stars(400);  // Agregar 100 estrellas al espacio
 
     let translation = Vec3::new(0.0, 0.0, 0.0);
     let mut rotation = Vec3::new(0.0, 0.0, 0.0);

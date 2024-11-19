@@ -26,7 +26,9 @@ pub enum CelestialBody {
     Moon,
     sun,
     gas,
-    rocky
+    rocky,
+    nave,
+    star
    
 }
 
@@ -196,6 +198,68 @@ impl GasPlanet {
     }
 
 
+    #[derive(Clone, Copy)]
+    pub struct Startplanet {
+        position: Vec3,
+        scale: f32,
+        rotation: Vec3,
+        orbit_angle: f32,
+        orbit_radius: f32,
+        orbit_speed: f32,
+    }
+
+    impl Startplanet {
+        fn new() -> Self {
+            Startplanet {
+                position: Vec3::new(0.0, 0.0, 0.0),
+                scale: 0.85, 
+                rotation: Vec3::new(0.0, 0.0, 0.0),
+                orbit_angle: 0.0,
+                orbit_radius: 8.0, // Radio de la órbita
+                orbit_speed: 0.004, // Velocidad de la órbita
+            }
+        }
+
+        fn update(&mut self) {
+            self.orbit_angle += self.orbit_speed;
+            self.position.x = self.orbit_angle.cos() * self.orbit_radius;
+            self.position.z = self.orbit_angle.sin() * self.orbit_radius;
+            self.rotation.y += 0.01; 
+        }
+    }
+
+    #[derive(Clone, Copy)]
+pub struct Spaceship {
+    position: Vec3,
+    scale: f32,
+    rotation: Vec3,
+    orbit_angle: f32,
+    orbit_radius: f32,
+    orbit_speed: f32,
+}
+
+impl Spaceship {
+    fn new() -> Self {
+        Spaceship {
+            position: Vec3::new(2.0, 0.0, -5.0),
+            scale: 1.0,
+            rotation: Vec3::new(0.0, 0.0, 0.0),
+            orbit_angle: 0.0,
+            orbit_radius: 9.0, // Radio de la órbita de la nave
+            orbit_speed: 0.01, // Velocidad de la órbita de la nave
+        }
+    }
+
+    fn update(&mut self) {
+        // Actualizar el ángulo de la órbita
+        self.orbit_angle += self.orbit_speed;
+        // Calcular la nueva posición de la nave en la órbita
+        self.position.x = self.orbit_angle.cos() * self.orbit_radius;
+        self.position.z = self.orbit_angle.sin() * self.orbit_radius;
+        // Actualizar la rotación para simular el giro de la nave
+        self.rotation.y += 0.01;
+    }
+}
 
 fn create_noise() -> FastNoiseLite {
     let mut noise = FastNoiseLite::with_seed(1337);
@@ -300,7 +364,7 @@ fn render(framebuffer: &mut Framebuffer, uniforms: &Uniforms, vertex_array: &[Ve
 }
 
 fn handle_input(window: &Window, camera: &mut Camera) {
-    let movement_speed = 3.0;
+    let movement_speed = 10.0;
     let rotation_speed = PI/50.0;
     let zoom_speed = 0.1;
    
@@ -363,6 +427,7 @@ fn main() {
     window.update();
 
     framebuffer.set_background_color(0x000000);
+    framebuffer.add_stars(10000);  // Agregar 100 estrellas al espacio
 
     let translation = Vec3::new(0.0, 0.0, 0.0);
     let mut rotation = Vec3::new(0.0, 0.0, 0.0);
@@ -374,8 +439,12 @@ fn main() {
         Vec3::new(0.0, 1.0, 0.0)
     );
 
-    let obj = Obj::load("assets/models/sphere.obj").expect("Failed to load obj");
+    let obj: Obj = Obj::load("assets/models/sphere.obj").expect("Failed to load obj");
+    let spaceship_obj = Obj::load("assets/models/nave.obj").expect("Failed to load spaceship.obj");
+    println!("Vertices cargados: {}", spaceship_obj.get_vertex_array().len());
     let vertex_arrays = obj.get_vertex_array();
+    let vertex_array_nave = spaceship_obj.get_vertex_array();
+
     
     let mut time = 0;
     let mut current_body = CelestialBody::earth;
@@ -384,6 +453,8 @@ fn main() {
     let mut gas_planet = GasPlanet::new();
     let mut star = Star::new();
     let mut rocky_planet = RockyPlanet::new();
+    let mut Startplanet = Startplanet::new();
+    let mut nave = Spaceship::new();
 
 
 
@@ -482,6 +553,24 @@ fn main() {
             // Renderizar el planeta de gas
             render(&mut framebuffer, &gas_planet_uniforms, &vertex_arrays);
 
+
+            rocky_planet.update(); // Actualizar el planeta rocoso
+
+            // Crear matriz de modelo para cada cuerpo celeste y renderizar
+            let rocky_model_matrix = create_model_matrix(rocky_planet.position, rocky_planet.scale, rocky_planet.rotation);
+            let rocky_uniforms = Uniforms {
+                model_matrix: rocky_model_matrix,
+                    view_matrix,
+                    projection_matrix,
+                    viewport_matrix,
+                    time,
+                    noise: create_noise(),
+                current_body: CelestialBody::rocky, // Marcar como el planeta actual
+            };
+    
+            render(&mut framebuffer, &rocky_uniforms, &vertex_arrays);
+    
+
             // Actualizar Star
             star.update();
 
@@ -498,26 +587,45 @@ fn main() {
                 viewport_matrix,
                 time,
                 noise: create_noise(),
-                current_body: CelestialBody::rocky, // Enum puede cambiarse a algo representativo de Star
+                current_body: CelestialBody::star, // Enum puede cambiarse a algo representativo de Star
             };
 
             render(&mut framebuffer, &star_uniforms, &vertex_arrays);
 
-                rocky_planet.update(); // Actualizar el planeta rocoso
 
-        // Crear matriz de modelo para cada cuerpo celeste y renderizar
-        let rocky_model_matrix = create_model_matrix(rocky_planet.position, rocky_planet.scale, rocky_planet.rotation);
-        let rocky_uniforms = Uniforms {
-            model_matrix: rocky_model_matrix,
+            Startplanet.update(); // Actualizar el planeta rocoso
+
+            // Crear matriz de modelo para cada cuerpo celeste y renderizar
+            let Startplanet_matrix = create_model_matrix(Startplanet.position, Startplanet.scale, Startplanet.rotation);
+            let staruniforms = Uniforms {
+                model_matrix: Startplanet_matrix,
+                    view_matrix,
+                    projection_matrix,
+                    viewport_matrix,
+                    time,
+                    noise: create_noise(),
+                current_body: CelestialBody::star, // Marcar como el planeta actual
+            };
+    
+            render(&mut framebuffer, &staruniforms, &vertex_arrays);
+
+               
+            nave.update();
+                // Crear matriz de modelo para la nave
+            let spacecraft_model_matrix = create_model_matrix(nave.position, 0.09, nave.rotation);
+            let spacecraft_uniforms = Uniforms {
+                model_matrix: spacecraft_model_matrix,
                 view_matrix,
                 projection_matrix,
                 viewport_matrix,
                 time,
                 noise: create_noise(),
-            current_body: CelestialBody::rocky, // Marcar como el planeta actual
-        };
+                current_body: CelestialBody::nave, // Marcar como la nave actual
+            };
 
-        render(&mut framebuffer, &rocky_uniforms, &vertex_arrays);
+            // Renderizar la nave
+            render(&mut framebuffer, &spacecraft_uniforms, &vertex_array_nave);
+                
 
 
                     }

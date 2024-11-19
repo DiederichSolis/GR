@@ -1,3 +1,5 @@
+use rand::Rng;
+
 
 pub struct Framebuffer {
     pub width: usize,
@@ -19,6 +21,28 @@ impl Framebuffer {
             current_color: 0xFFFFFF
         }
     }
+
+    pub fn add_stars(&mut self, star_count: usize) {
+        let mut rng = rand::thread_rng();
+    
+        // Color para las estrellas
+        let star_color = 0xFFFFFF; // Blanco
+    
+        for _ in 0..star_count {
+            let x = rng.gen_range(0..self.width);
+            let y = rng.gen_range(0..self.height);
+            
+            // Establecer el color actual para las estrellas
+            self.set_current_color(star_color);
+            
+            // Profundidad baja para asegurarte que las estrellas estén al fondo
+            let depth = f32::INFINITY;
+    
+            // Dibuja el punto
+            self.point(x, y, depth);
+        }
+    }
+
 
     pub fn clear(&mut self) {
         for pixel in self.buffer.iter_mut() {

@@ -36,12 +36,15 @@ s : alinea los planetas de manera horizontal
 tecla  w  Panorama
 </p>
 
-![image](https://github.com/user-attachments/assets/88495bde-297c-457c-9528-838d9f56570a)
+![image](https://github.com/user-attachments/assets/935e378c-9313-40af-8239-526e58a3dd59)
+
 
 <p> 
 tecla  s  Panorama
 </p>
-![image](https://github.com/user-attachments/assets/a443b825-043c-411d-b950-0bb7a4d0931b)
+
+![image](https://github.com/user-attachments/assets/3d67ff67-065e-4bc5-b42c-4270bf11cdce)
+
 
 RUNNING DE PROJECT
 <p>

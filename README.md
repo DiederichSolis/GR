@@ -25,7 +25,7 @@ COMANDOS
 ```
 
 <p>
-3.) tecla w, s  Panorama
+3.) tecla w, s  Panorama, se debe de dejar presionadas estas teclas
 </p>
 
 ```
@@ -52,7 +52,7 @@ RUNNING DE PROJECT
 </p>
 
 ```
-gti clone https://github.com/DiederichSolis/GR.git
+git clone https://github.com/DiederichSolis/GR.git
 ```
 
 <p>
